@@ -1,33 +1,6 @@
 ## Classification：分类模型在Pytorch当中的实现
 ---
 
-## 目录
-1. [仓库更新 Top News](#仓库更新)
-2. [所需环境 Environment](#所需环境)
-3. [文件下载 Download](#文件下载)
-4. [训练步骤 How2train](#训练步骤)
-5. [预测步骤 How2predict](#预测步骤)
-6. [评估步骤 How2eval](#评估步骤)
-7. [参考资料 Reference](#Reference)
-
-## Top News
-**`2022-03`**:**进行了大幅度的更新，支持step、cos学习率下降法、支持adam、sgd优化器选择、支持学习率根据batch_size自适应调整。**  
-BiliBili视频中的原仓库地址为：https://github.com/bubbliiiing/classification-pytorch/tree/bilibili
-
-**`2021-01`**:**仓库创建，支持模型训练，大量的注释，多个可调整参数。支持top1-top5的准确度评价。**   
-
-## 所需环境
-pytorch == 1.2.0
-
-## 文件下载
-训练所需的预训练权重都可以在百度云下载。     
-链接: https://pan.baidu.com/s/18Ze7YMvM5GpbTlekYO8bcA     
-提取码: 5wym   
-
-训练所用的示例猫狗数据集也可以在百度云下载。   
-链接: https://pan.baidu.com/s/1hYBNG0TnGIeWw1-SwkzqpA     
-提取码: ass8    
-
 ## 训练步骤
 1. datasets文件夹下存放的图片分为两部分，train里面是训练图片，test里面是测试图片。  
 2. 在训练之前需要首先准备好数据集，在train或者test文件里里面创建不同的文件夹，每个文件夹的名称为对应的类别名称，文件夹下面的图片为这个类的图片。文件格式可参考如下：
@@ -154,6 +127,3 @@ _defaults = {
 - 以人脸检测器为基础，短边外扩到和长边一致；
 - 在Dataset预处理过程中实时裁剪非人脸区域，扩增非正样本的数量；
 - 以tddfa为对齐方式，送入人脸分割模型得到人脸的mask，将四通道的图作为输入送入分类模型，因此需要更改脚本为torch.multiprocess的启动方式，因为Dataset中不支持初始化GPU的推理操作，为此，还需要重新初始化因为新增通道导致的预训练模型的初始权重维度，由(bactch, 3, 256, 256)改为(batch, 4, 256, 256), 新增的通道权重可以为三个通道的均值, 训练脚本为train_mp.py;
-
-## Reference
-https://github.com/keras-team/keras-applications   
