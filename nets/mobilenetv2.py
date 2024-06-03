@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 from torch.hub import load_state_dict_from_url
 # from torchvision.models.utils import load_state_dict_from_url
@@ -88,7 +89,10 @@ class MobileNetV2(nn.Module):
         self.last_channel = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
 
         # 224, 224, 3 -> 112, 112, 32
-        features = [ConvBNReLU(3, input_channel, stride=2)]
+        try:
+            features = [ConvBNReLU(3, input_channel, stride=2)]  # 输入为RGB图，三通道
+        except:
+            features = [ConvBNReLU(4, input_channel, stride=2)]  # 输入为RGBA图，四通道
 
         for t, c, n, s in inverted_residual_setting:
             output_channel = _make_divisible(c * width_mult, round_nearest)
@@ -139,7 +143,22 @@ def mobilenetv2(pretrained=False, progress=True, num_classes=1000):
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls['mobilenetv2'], model_dir='./model_data',
                                             progress=progress)
-        model.load_state_dict(state_dict)
+        try:
+            model.load_state_dict(state_dict)      # 原始的输入三通道，预训练模型为ImageNet
+        except:
+            print("Load weight get error, and change to new weight ...")
+            new_state_dict = dict()
+            for k, v in state_dict.items():
+                # print(f"{k} -> {v.shape}")
+                if k == "features.0.0.weight":
+                    # alpha = torch.randn((32, 1, 3, 3))
+                    alpha= v.mean(dim=1, keepdim=True)      # 加入输入新增了一个alpha通道, 导致预训练权重维度不匹配，可以将RGB通道的权重均值初始化为alpha通道的权重
+                    new_v = torch.concat([v, alpha], dim=1)
+                    # print(new_v.shape)
+                    new_state_dict[k] = new_v
+                else:
+                    new_state_dict[k] = v
+            model.load_state_dict(new_state_dict)
 
     if num_classes!=1000:
         model.classifier = nn.Sequential(
